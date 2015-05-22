@@ -273,6 +273,7 @@ class Command(BaseCommand):
             return 0
 
         #Update status of these records to RUNNING to prevent other jobs from picking it up
+        
         target_hosts.update(status="RUNNING")
 
         #Re-grab hosts
