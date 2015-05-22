@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html>
+    {% load staticfiles %}
+    <script src="{% static 'ssllabs/scripts/Chart.min.js'%}"></script>
+    {% include "ssllabs/bootstrap.html" %}
+    <body>
+    	{% include "ssllabs/nav.html" %}
+        <div class="container-fluid">
+            {% if message %}<p><strong>{{ message }}</strong></p>{% endif %}
+            <div class="col-sm-9 col-sm-offset-3 col-md-10 col-md-offset-2 main">
+              <h1 class="page-header">Manage</h1>
+			    {% if messages %}
+            		{% for message in messages %}
+
+                    {% if message.level == DEFAULT_MESSAGE_LEVELS.ERROR %}
+                    <div class="alert alert-danger" role="alert">
+                    {% elif message.level == DEFAULT_MESSAGE_LEVELS.SUCCESS %}
+                    <div class="alert alert-success" role="alert">
+                    {% endif %}
+                        <strong>{{ message }}</strong>
+                    </div>
+            		{% endfor %}
+          		{% endif %} 
+                <button type="button" class="btn btn-primary" id="addhost" onclick="location.href='{% url 'ssllabs:managehost' %}'">Add</button>
+                <div class="table-responsive">
+					<table class="table table-striped">
+    		            <thead>
+    		              <thead>
+    		                <th>Account</th>
+    		                <th>Host Name</th>
+    		                <th>Grade</th>
+                            <th>Status</th>
+    		                <th>Last Run</th>
+    		                <th>Actions</th>
+    		              </tr>
+    		            </thead>
+    		            <tbody>
+    					{% for h in host_list %}
+    		        	<tr>
+    		        		<td>{{ h.account_id }}</td>
+    		        		<td>{{ h.host }}</td>
+    		        		<td>{{ h.grade }}</td>
+                            <td>{{ h.status }}</td>
+    		        		<td>{{ h.endTime }}</td>
+    		        		<td>
+                                <button type="button" class="btn btn-xs btn-primary" id="QueueHost{{h.host_id}}" onclick="location.href='{% url 'ssllabs:scanhost' h.host_id %}'"/>Scan</button>
+                                <button type="button" class="btn btn-xs btn-primary" id="DeleteHost{{h.host_id}}" onclick="location.href='{% url 'ssllabs:deletehost' h.host_id %}'"/>Delete</button>
+                            </td>
+    					</tr>
+    					{% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </body>
+</html>
+

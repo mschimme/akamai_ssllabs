@@ -1,0 +1,12 @@
+<a href="../" >Return</a>
+
+{% if host_detail %}
+    <table border=1>
+    	<tr><td>{{ host_detail.host }}</td></tr>
+    	<tr><td>{{ host_detail.port }}</td></tr>
+        <tr><td>{{ host_detail.grade }}</td></tr>
+        <tr><td>{{ host_detail.endTime }}</td></tr>
+    </table>
+{% else %}
+    <p>No details are available for this host.  Was it deleted?</p>
+{% endif %}

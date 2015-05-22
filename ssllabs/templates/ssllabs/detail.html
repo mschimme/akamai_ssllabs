@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html>
+    {% include "ssllabs/bootstrap.html" %}
+    <body>
+    	{% include "ssllabs/nav.html" %}
+        <div class="container-fluid">
+        	<a href="{% url 'ssllabs:listhosts' %}">Return</a>
+			{% if host_detail %}
+			<div class="row">
+				<div class="col-sm-6">
+					<table class="table table-striped">
+		            <tbody>
+		            	<tr><th scope="row">Account</th><td>{{ host_detail.account_id }}</td></tr>
+				    	<tr><th scope="row">Hostname</th><td>{{ host_detail.host }}</td></tr>
+				    	<tr><th scope="row">Port</th><td>{{ host_detail.port }}</td></tr>
+				        <tr><th scope="row">Grade</th><td>{{ host_detail.grade }}</td></tr>
+				        <tr><th scope="row">Last Run</th><td>{{ host_detail.endTime }}</td></tr>
+				    </tbody>
+				</div>
+			</div>
+			{% else %}
+			<div class="alert alert-danger" role="alert">
+				<strong>No details are available for this host.</strong>  Was it deleted?
+			</div>
+			{% endif %}
+        </div>
+    </body>
+</html>
+
+
+
+
+
+
+    

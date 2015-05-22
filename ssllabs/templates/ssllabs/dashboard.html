@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html>
+    {% load staticfiles %}
+    <!--<script src="{% static 'ssllabs/scripts/Chart.min.js'%}"></script>-->
+    <script type="text/javascript" src="https://www.google.com/jsapi"></script>
+    
+    {% include "ssllabs/bootstrap.html" %}
+    <body>
+    	{% include "ssllabs/nav.html" %}
+		
+		        <div class="col-sm-9 col-sm-offset-3 col-md-10 col-md-offset-2 main">
+		          <h1 class="page-header">SSL Overview</h1>
+		          <div class="row placeholders">
+		          <div>
+          	{% if warning %}<div class="alert alert-info">{{warning}}</div>{% endif %}
+
+						<form method="get" action="{% url 'ssllabs:dashboard' %}" name="filterForm" id="filterForm">
+							Account: <select id="select_account" name="select_account" onchange="$('#exportCSV').val('false'); $('#filterForm').submit()">
+								<option value="0">All Accounts</option>
+							{% for a in account_list %}	<option value="{{a.account_id}}" {% if p_account_id == a.account_id %} selected {% endif %}>{{a.name}}</option>
+							{% endfor %}
+							</select><button type="button" class="btn btn-primary btn-xs" id="addhost" onclick="$(location).attr('href', {% url 'ssllabs:dashboard' %})">Clear Filters</button>
+							<input type="hidden" value="1" name="page" id="page" />
+							<input type="hidden" value="{{p_grade}}" name="grade_filter" id="grade_filter" />
+							<input type="hidden" value="{{p_rc4}}" name="rc4_filter" id="rc4_filter" />
+							<input type="hidden" value="{{p_sig}}" name="sig_filter" id="sig_filter" />
+							<input type="hidden" value="false" name="exportCSV" id="exportCSV" />
+						</form>
+
+					</div>
+          	
+          	<span>Last Refresh: {{last_update}}</span>
+			<script type="text/javascript">
+				google.load("visualization", "1", {packages:["corechart"]});
+			      google.setOnLoadCallback(drawChart);
+			      function drawChart() {
+
+			        var grade_data = google.visualization.arrayToDataTable([
+			          ['Grade', 'Count of Grade'],
+
+			          {% for r in q_result_grade %} 
+			          ['{{r.grade}}', {{r.num_hosts}}],
+			          {% endfor %}
+			        ]);
+
+			        var grade_options = {
+			          width: 400,
+			          height: 300,
+			          pieSliceText: 'value',
+			          pieHole: 0.3,
+			          
+			        };
+
+			        var grade_chart = new google.visualization.PieChart(document.getElementById('grade_piechart'));
+
+			          // The select handler. Call the chart's getSelection() method
+					  function gradeSelectHandler() {
+					    var selectedItem = grade_chart.getSelection()[0];
+					    if (selectedItem) {
+					      var value = grade_data.getValue(selectedItem.row, 0);
+					      applyFilter('grade_filter', value)
+					    }
+					  }
+
+					  // Listen for the 'select' event, and call my function selectHandler() when
+					  // the user selects something on the chart.
+					  google.visualization.events.addListener(grade_chart, 'select', gradeSelectHandler);
+
+			        grade_chart.draw(grade_data, grade_options);
+
+
+
+			        var sig_data = google.visualization.arrayToDataTable([
+			          ['Signature Algorithm', 'Count of Signature Algorithm'],
+
+			          {% for r in q_result_sig_alg %} 
+			          ['{{r.signatureAlg}}', {{r.num_hosts}}],
+			          {% endfor %}
+			        ]);
+
+			        var sig_options = {
+			          width: 400,
+			          height: 300,
+			          pieSliceText: 'value',
+			          pieHole: 0.3,
+			          slices: {
+			            0: { color: '#dc3912', },
+			            1: { color: '#3366cc' }
+			          }
+			        };
+
+			   		sig_chart = new google.visualization.PieChart(document.getElementById('sig_piechart'));
+
+			        // The select handler. Call the chart's getSelection() method
+					  function sigSelectHandler() {
+					    var selectedItem = sig_chart.getSelection()[0];
+					    if (selectedItem) {
+					      var value = sig_data.getValue(selectedItem.row, 0);
+					      applyFilter('sig_filter', value)
+					    }
+					  }
+
+					  // Listen for the 'select' event, and call my function selectHandler() when
+					  // the user selects something on the chart.
+					  google.visualization.events.addListener(sig_chart, 'select', sigSelectHandler);
+
+			        sig_chart.draw(sig_data, sig_options);
+
+			        var rc4_data = google.visualization.arrayToDataTable([
+			          ['RC4', 'Count of RC4'],
+
+			          {% for r in q_result_rc4 %} 
+			          ['{{r.supportsRC4}}', {{r.num_hosts}}],
+			          {% endfor %}
+			        ]);
+
+			        var rc4_options = {
+			          width: 400,
+			          height: 300,
+			          pieSliceText: 'value',
+			          pieHole: 0.3,
+			          slices: {
+			            0: { color: '#dc3912', },
+			            1: { color: '#3366cc' }
+			          }
+			        };
+
+			   		rc4_chart = new google.visualization.PieChart(document.getElementById('rc4_piechart'));
+
+			        // The select handler. Call the chart's getSelection() method
+					  function rc4SelectHandler() {
+					    var selectedItem = rc4_chart.getSelection()[0];
+					    if (selectedItem) {
+					      var value = rc4_data.getValue(selectedItem.row, 0);
+					      applyFilter('rc4_filter', value)
+					    }
+					  }
+
+					  // Listen for the 'select' event, and call my function selectHandler() when
+					  // the user selects something on the chart.
+					  google.visualization.events.addListener(rc4_chart, 'select', rc4SelectHandler);
+
+			        rc4_chart.draw(rc4_data, rc4_options);
+
+					function applyFilter(id, value) {
+						id = document.getElementById(id);
+						$(id).val(value);
+						$('#filterForm').submit();
+					}
+
+			      }
+			    </script>
+			    <div class="row placeholders">
+					<div class="col-xs-4 col-sm-4 placeholder">
+						<div id="grade_piechart" ></div>
+						<h4>By Grade</h4>
+					</div>
+					<div class="col-xs-4 col-sm-4 placeholder" >
+						<div id="sig_piechart" ></div>
+						<h4>By Certificate Algorithm</h4>
+					</div>
+					<div class="col-xs-4 col-sm-4 placeholder" >
+						<div id="rc4_piechart" ></div>
+						<h4>Supports RC4</h4>
+					</div>
+
+		    	</div>
+		    	</div>
+
+
+		          <h2 class="sub-header">Data Set <button type="button" class="btn btn-primary btn-xs" id="addhost" onclick="$('#exportCSV').val('true'); $('#filterForm').submit(); $('#exportCSV').val('false')">Export to CSV</button></h2>
+		          <div class="table-responsive">
+
+						<ul class="pagination pagination-sm">
+				        {% for p in num_pages %} 
+				        	<li {% if q_result_all.number == forloop.counter %} class="active" {% endif %}><a href="#" onclick="$('#page').val({{forloop.counter}}); $('#filterForm').submit()">{{forloop.counter}}</a></li>
+				        {% endfor %}
+				        </ul>
+
+
+						<table class="table table-striped">
+				            <thead>
+				              <tr>
+				                <th>Account</th>
+				                <th>Host Name</th>
+				                <th>Grade</th>
+				                <th>Algorithm</th>
+				                <th>Supports RC4</th>
+				                <th>Not Before</th>
+				                <th>Not After</th>
+				                <th>Status</th>
+				              </tr>
+				            </thead>
+				            <tbody>
+							{% for h in q_result_all %}
+							<tr {% if h.status == 'ERROR' %} class="danger" {% elif h.status == 'QUEUED' %} class="warning" {% elif h.status == 'RUNNING' %} class="info" {% endif %} >
+				        		<td>{{ h.account_id }}</td>
+				        		<td><a href="https://www.ssllabs.com/ssltest/analyze.html?d={{h.host}}&hideResults=on" target="_blank">{{ h.host }}</a></td>
+				        		<td>{{ h.grade }}</td>
+				        		<td>{{ h.signatureAlg }}</td>
+				        		<td>{{ h.supportsRC4 }}</td>
+				        		<td>{{ h.notBefore }}</td>
+				        		<td>{{ h.notAfter }}</td>
+				        		<td>{{ h.status }}</td>
+							</tr>
+						{% endfor %}
+							</tbody>
+						</table>
+		          </div>
+		        </div>
+		      </div>
+		    </div>
+
+
+
+
+            {% if message %}<p><strong>{{ message }}</strong></p>{% endif %}
+
+
+
+
+
+        </div>
+        {% include "ssllabs/bootstrap_footer.html" %}
+    </body>
+</html>
+
