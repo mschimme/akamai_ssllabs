@@ -106,3 +106,5 @@ PAGE_SIZE = 20
 
 # Used by the query program for multiprocessing.  Should match the number of CPUs you have.
 PROCESSES = 4
+
+LOGIN_URL = '/ssllabs/auth/'

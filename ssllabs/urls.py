@@ -17,21 +17,22 @@ Including another URLconf
 from django.conf.urls import url
 from . import views
 from django.http import HttpResponse
+from django.contrib.auth.decorators import login_required
 
 urlpatterns = [
 
+    #Auth and logout
+    url(r'^auth/$', views.auth, name='auth'),
+    url(r'^logout/$', views.logout_view, name='logout_view'),
+
     #Management
-	url(r'^manage/$', views.IndexView.as_view(), name='listhosts'),
-	#url(r'^manage/(?P<pk>[0-9]+)/$', views.DetailView.as_view(), name='detail'),
+	url(r'^manage/$', login_required(views.IndexView.as_view()), name='listhosts'),
     url(r'^manage/(?P<host_id>[0-9]+)/$', views.managehost, name='managehost'),
     url(r'^manage/add/$', views.managehost, name='managehost'),
     url(r'^manage/scan/(?P<host_id>[0-9]+)/$', views.scanhost, name='scanhost'),
     url(r'^manage/delete/(?P<host_id>[0-9]+)/$', views.deletehost, name='deletehost'),
-    #url(r'^manage/addmultiple/$', views.addhosts, name='addhosts'),
 
     #Dashboard
     url(r'^$', views.dashboard, name='dashboard'),
-    #url(r'^(?P<p_account_id>[0-9]+)/$', views.dashboard, name='dashboard')
-    #url(r'^(?P<p_account_id>[0-9]+)/(?P<p_grade>[0-9]+)$', views.dashboard, name='dashboard')
 
 ]

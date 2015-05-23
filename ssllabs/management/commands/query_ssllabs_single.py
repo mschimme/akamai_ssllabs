@@ -197,7 +197,12 @@ def run_mp(hosts, use_cache=True, dump_json=False):
             continue
 
         for ep in data.get('endpoints'):
-            # Find the endpoint that has a server name
+            
+            #If server name is missing, consider it an invalid endpoint
+            if not ep.get('serverName'):
+                print('  *** No server name, skipping this endpoint')
+                continue
+
             if ep.get('statusMessage').upper() == 'READY' and ep.get('progress') == 100:
                 thishost = data.get('host')
                 startTime = time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(data.get('startTime') / 1000))
@@ -254,6 +259,12 @@ def run_mp(hosts, use_cache=True, dump_json=False):
                 if dump_json:
                     with open('%s.json' % data.get('host'), 'wb') as fp:
                         json.dump(data, fp, indent=2, sort_keys=True)
+
+                #Future work: Tool should save multiple endpoints, but prefer Akamai ones for now
+                if ep.get('serverName').find('akamai') >= 0:
+                    print('  *** Found Akamai endpoint, skipping the rest')
+                    break
+
 
 
 class Command(BaseCommand):

@@ -9,6 +9,8 @@ from django.db.models import Count, Max
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from django.conf import settings
 from django.contrib.messages import get_messages
+from django.contrib.auth.decorators import login_required
+from django.contrib.auth import authenticate, login, logout
 
 from .models import Host, Account, Profile
 
@@ -26,6 +28,34 @@ import csv
 #	context = {'host_detail': host_detail}
 #	return render(request, 'ssllabs/hosts.html', context)
 
+def logout_view(request):
+	logout(request)
+	return HttpResponseRedirect(reverse('ssllabs:auth'))
+
+def auth(request):
+
+	if request.POST:
+		username = request.POST['username']
+		password = request.POST['password']
+		user = authenticate(username=username, password=password)
+		if user is not None:
+			if user.is_active:
+				login(request, user)
+				return HttpResponseRedirect(reverse('ssllabs:dashboard'))
+			else:
+				# Return a 'disabled account' error message
+				error = "Account is disabled"
+
+		else:
+			error = "Invalid username and/or password"
+
+		context = {'error' : error}
+	else:
+		context = {}
+
+	return render(request, 'ssllabs/auth.html', context)
+
+@login_required
 def dashboard(request):
 
 	account_name = 'All Accounts'
@@ -104,19 +134,7 @@ def dashboard(request):
 
 	return render(request, 'ssllabs/dashboard.html', context)
 
-class DashboardView(generic.ListView):
-	template_name = 'ssllabs/dashboard.html'
-	context_object_name = 'account_list'
-
-	def get_context_data(self, **kwargs):
-		context = super(IndexView, self).get_context_data(**kwargs)
-		context['host_list'] = Host.objects.order_by('host')
-		context['account_list'] = Account.objects.order_by('name')
-		return context
-    
-	def get_queryset(self):
-		return Host.objects.values('account_id', 'grade').annotate(num_hosts=Count('host')).order_by('account_id')
-
+@login_required
 def managehost(request, host_id = '0'):
 
 	#Get list of accounts
@@ -194,6 +212,7 @@ def managehost(request, host_id = '0'):
 	
 	return render(request, 'ssllabs/manage_host.html', context)	
 
+@login_required
 def scanhost(request, host_id):
 	host_detail = get_object_or_404(Host, pk=host_id)
 	host_detail.status = "QUEUED"
@@ -209,6 +228,7 @@ def scanhost(request, host_id):
 	messages.success(request, "\""+host_detail.host+"\" Successfully Queued for Scan")
 	return HttpResponseRedirect(reverse('ssllabs:listhosts'))
 
+@login_required
 def deletehost(request, host_id):
 	h = get_object_or_404(Host, pk=host_id)
 	
@@ -218,6 +238,7 @@ def deletehost(request, host_id):
 
 	return HttpResponseRedirect(reverse('ssllabs:listhosts'))	
 
+@login_required
 def export_to_csv(request, hosts):
 	response = HttpResponse(content_type='text/csv')
 	response['Content-Disposition'] = 'attachment; filename="qualys_dashboard.csv"'
@@ -242,6 +263,7 @@ class IndexView(generic.ListView):
 	def get_queryset(self):
 		return Host.objects.order_by('host')
 
+@login_required
 class DetailView(generic.DetailView):
     model = Host
     context_object_name = 'host_detail'
