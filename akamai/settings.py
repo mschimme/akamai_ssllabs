@@ -19,9 +19,6 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/1.8/howto/deployment/checklist/
 
-# SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'wvw##)4l4zzp&wg*p9ygp*3ytoygfmk7e6qrv&=h6w&k+iu8ac'
-
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
@@ -108,3 +105,8 @@ PAGE_SIZE = 20
 PROCESSES = 4
 
 LOGIN_URL = '/ssllabs/auth/'
+
+try:
+    from .local_settings import *
+except ImportError:
+    pass
